@@ -1,0 +1,131 @@
+@import './variables.scss';
+@import './pc.scss';
+@import './mobile.scss';
+
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+}
+
+label {
+  font-weight: 700;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+  height: 100%;
+  box-sizing: border-box;
+  // 平滑滚动
+  scroll-behavior: smooth;
+}
+
+#app {
+  height: 100%;
+  background-color: #f9f9fb;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  outline: none;
+  text-decoration: none;
+}
+
+div:focus {
+  outline: none;
+}
+
+a:focus,
+a:active {
+  outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+p,ul{
+  margin: 0;
+}
+ol,ul{
+  list-style:none;
+  padding: 0;
+}
+
+button {
+  border: 1px solid transparent;
+  outline: none;
+}
+
+input,button,textarea {
+	border:0;
+	margin:0;
+	padding:0;
+	/*-webkit-appearance:none;*/
+	background-color:rgba(0, 0, 0, 0);
+}
+
+.clearfix {
+  &:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+}
+.btn-loading{
+  pointer-events: none;
+}
+
+// btn  hover动画效果
+.btn-hover-animate {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    padding-top: 100%;
+    background: transparent;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes ripple {
+    from {
+      transform: translate(-50%, -50%) scale(0);
+      /**由于我们默认写了变换属性，所以这里要补上translate(-50%,-50%)，不然就会被替换了**/
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    to {
+      transform: translate(-50%, -50%) scale(1.2);
+      background: transparent;
+    }
+  }
+
+  &:hover {
+    &::after {
+      animation: ripple 1s ease-out;
+    }
+  }
+}

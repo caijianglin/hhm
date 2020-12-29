@@ -1,0 +1,447 @@
+<template>
+  <div class="home" id="home">
+    <div class="home-header">
+      <img class="logo" src="@assets/logo.png" alt="" />
+      <div class="search">
+        <input
+          v-model.trim="searchText"
+          placeholder="请输入搜索关键字"
+          type="text"
+          @keyup.enter="search"
+        />
+        <svg-icon
+          class="icon-clear"
+          icon-class="delete"
+          @click="clearSearch"
+        ></svg-icon>
+        <svg-icon
+          class="icon-search"
+          icon-class="search"
+          @click="search"
+        ></svg-icon>
+      </div>
+      <div class="nav-list">
+        <a class="home-name" href="#">公司门户</a>
+        <a class="home-name" href="http://192.168.146.122/dq.asp" target="_blank">党群门户</a>
+      </div>
+    </div>
+    <div class="container">
+      <div class="banner">
+        <swiper :options="swiperOption" v-if="bannerImgs.length > 0">
+          <swiper-slide
+            v-for="(item, index) in bannerImgs"
+            :key="`slide-${index}`"
+          >
+            <img class="banner-img" :src="item.imgpath" alt="" />
+          </swiper-slide>
+          <div class="swiper-pagination" slot="pagination"></div>
+        </swiper>
+      </div>
+      <ul class="menu clearfix">
+        <li
+          v-for="(label, index) in menuList"
+          :key="index"
+          class="menu-item"
+          :class="[activeMenu === index ? 'active' : '']"
+          @click="menuChange(label, index)"
+        >
+          {{ label }}
+        </li>
+      </ul>
+      <div class="content-box-wrapper clearfix">
+        <company v-show="activeMenu === 0" />
+        <!--<dqmh v-show="activeMenu === 1" />-->
+        <!--<others v-show="activeMenu !== 0 && activeMenu !== 1" />-->
+        <others v-show="activeMenu !== 0" />
+      </div>
+    </div>
+    <!-- moreDataDialogVisible -->
+    <tools />
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import "swiper/dist/css/swiper.css";
+import { swiper, swiperSlide } from "vue-awesome-swiper";
+import { getBannerImg } from "@api/index.ts";
+import { Company, Dqmh, Others, Tools } from "./components";
+let vm: any = null;
+
+// Vue.use(Popover);
+
+@Component({
+  components: {
+    swiper,
+    swiperSlide,
+    Company,
+    Dqmh,
+    Others,
+    Tools
+  }
+})
+export default class Home extends Vue {
+  // @Getter user_info!: any;
+  private searchText: string = "";
+  private reg: any = null;
+  private bannerImgs: object[] = [];
+  private swiperOption: any = {
+    autoHeight: true,
+    slidesPerView: 1,
+    spaceBetween: 30,
+    loop: true,
+    speed: 1000,
+    autoplay: {
+      delay: 4000,
+      disableOnInteraction: false
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true
+    },
+    on: {
+      tap(e: any) {
+        // 过滤分页与切换按钮的点击事件
+        if (
+          e.target.classList.contains("swiper-button-white") ||
+          e.target.classList.contains("swiper-pagination-bullet")
+        ) {
+          return false;
+        }
+        // 箭头函数的this会指向Home实例，需用function
+        vm.handleClickSlide(this);
+      }
+    }
+  };
+  private activeMenu: number = 0;
+  private menuList: string[] = [
+    "沪东重机",
+    "中船动力",
+    "动力研究院",
+    "中船三井",
+    "安柴公司",
+    "中船服务",
+    "..."
+  ];
+
+
+  // 页面tab菜单切换
+  menuChange(label: string, index: number) {
+    console.log("Home -> menuChange -> index", index);
+    if(index === 0){
+      this.activeMenu = index;
+    }
+    /*else if(index === 1){
+      window.open("http://192.168.146.122/dq.asp","_blank");
+    }*/
+    else{
+      this.activeMenu = index;
+    }
+
+  }
+  // 轮播图跳转事件
+  handleClickSlide(sp: any) {
+    const index: number = sp.realIndex;
+    const banner: any = this.bannerImgs[index];
+    if (!banner.imgurl) {
+      return false;
+    }
+    window.open(banner.imgurl, "_blank");
+  }
+  // 清空搜索条件
+  clearSearch() {
+    this.searchText = "";
+    this.reduceNode();
+  }
+  // 监测搜索关键词为空时清除highLight
+  @Watch("searchText")
+  getsearchText() {
+    if (this.searchText === "") {
+      this.reduceNode();
+    }
+  }
+  // 关键词搜索高亮+定位
+  search() {
+    this.reduceNode();
+    this.$nextTick(() => {
+      if (!this.searchText) {
+        return false;
+      }
+      const home: any = document.getElementById("home");
+      this.reg = new RegExp(this.searchText, "g");
+      this.searchChildNodes(home);
+      this.$nextTick(() => {
+        const highLightNodes: any = document.getElementsByClassName("anchor");
+        highLightNodes[0].scrollIntoView();
+      });
+    });
+  }
+  // 遍历节点
+  searchChildNodes(node: any) {
+    if (!node.innerHTML) {
+      return false;
+    }
+    if (node.innerHTML.includes(this.searchText)) {
+      if (node.children.length > 0) {
+        for (const child of node.childNodes) {
+          if (child.nodeType === 3 && /\s/.test(child.nodeValue)) {
+            // 删除空白的节点
+            continue;
+          } else {
+            this.searchChildNodes(child);
+          }
+        }
+      } else {
+        const newDom =
+          '<span style="background-color:#ff9632;" class="anchor">' +
+          this.searchText +
+          "</span>";
+        node.innerHTML = node.innerHTML.replace(this.reg, newDom);
+      }
+    } else {
+      return false;
+    }
+  }
+  // 高亮还原
+  reduceNode() {
+    const nodes: any = document.getElementsByClassName("anchor");
+    if (!nodes) {
+      return false;
+    }
+    for (const node of nodes) {
+      console.log("Home -> reduceNode -> node", node);
+      this.$nextTick(() => {
+        const textNode = document.createTextNode(node.innerText);
+        node.parentNode.replaceChild(textNode, node);
+      });
+    }
+  }
+  created() {
+    vm = this;
+  }
+  mounted() {
+    // 获取顶部轮播图
+    getBannerImg()
+      .then((res: any) => {
+        this.bannerImgs = res.result;
+      })
+      .catch(err => {
+        console.log("onShow -> err", err);
+      });
+  }
+}
+</script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+.home {
+  position: relative;
+  width: 100%;
+  background-color: #f9f9fb;
+
+  .home-header {
+    max-width: 1450px;
+    min-width: 1190px;
+    height: 90px;
+    margin: 0 auto;
+    padding: 25px 0;
+
+    img {
+      float: left;
+      display: block;
+      //width: 250px;
+      height: 30px;
+    }
+
+    .nav-list {
+      position: relative;
+      float: right;
+      margin-right: 40px;
+      font-size: 17px;
+      font-weight: 500;
+      color: #333;
+      line-height: 38px;
+
+      a {
+        position: relative;
+        display: inline-block;
+        margin: 0 20px 0 0;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:nth-of-type(1){
+          color: #005bac;
+
+          &::after {
+            position: absolute;
+            content: '';
+            width: 35px;
+            height: 3px;
+            left: 50%;
+            bottom: 2px;
+            transform: translateX(-50%);
+            background-color: #005bac;
+          }
+        }
+
+        &:hover {
+          color: #005bac;
+        }
+      }
+    }
+
+    .search {
+      position: relative;
+      float: right;
+      width: 342px;
+      height: 38px;
+      padding: 5px 18px;
+      border: 1px solid #999;
+      border-radius: 19px;
+
+      &:hover {
+        .icon-clear {
+          display: block;
+        }
+      }
+
+      input {
+        width: 100%;
+        height: 28px;
+        line-height: 28px;
+        outline-style: none;
+        border: 0px;
+        border-radius: 2px;
+        padding-right: 50px;
+        font-size: 13px;
+      }
+
+      .icon-clear {
+        position: absolute;
+        display: none;
+        top: 11px;
+        right: 50px;
+        width: 13px;
+        height: 13px;
+        color: #9a9a9a;
+        cursor: pointer;
+
+        &:hover {
+          color: #4192f7;
+        }
+      }
+
+      .icon-search {
+        position: absolute;
+        right: 18px;
+        top: 10px;
+        width: 15px;
+        color: #9a9a9a;
+        cursor: pointer;
+
+        &:hover {
+          color: #4192f7;
+        }
+      }
+    }
+  }
+  .container {
+    width: 1400px;
+    margin: 0 auto;
+
+    .banner {
+      width: 100%;
+
+      .swiper-container {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+      }
+
+      .banner-img {
+        // height: 436px;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+      }
+
+      /deep/.swiper-pagination-bullets {
+        bottom: 12px;
+        width: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 5px;
+        background-color: rgba(0, 0, 0, 0.29);
+        font-size: 14px;
+      }
+
+      /deep/.swiper-pagination-bullets .swiper-pagination-bullet {
+        margin: 0 10px;
+        width: 9px;
+        height: 9px;
+        background-color: #fff;
+        opacity: 0.29;
+      }
+
+      /deep/.swiper-pagination-bullet-active {
+        background-color: #fff !important;
+        opacity: 1 !important;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+      }
+    }
+    .menu {
+      display: flex;
+      flex-wrap: nowrap;
+      width: 100%;
+      height: 40px;
+      background-color: #005bac;
+      color: #fff;
+      list-style: none;
+
+      &-item {
+        flex: 1;
+        float: left;
+        height: 100%;
+        font-size: 13px;
+        line-height: 40px;
+        cursor: pointer;
+      }
+      .active {
+        background-color: #034b8b;
+      }
+    }
+    .content-box-wrapper {
+      width: 1420px;
+      margin-left: -10px;
+      padding: 15px 0 50px 0;
+    }
+  }
+}
+@media screen and (max-width: 1580px) {
+  .home {
+    .home-header {
+      max-width: 1290px;
+    }
+    .container {
+      width: 1190px;
+      .content-box-wrapper {
+        width: 1210px;
+      }
+    }
+  }
+}
+@media screen and (max-width: 1380px) {
+  .home {
+    .home-header {
+      max-width: 1190px;
+    }
+    .container {
+      width: 1090px;
+      .content-box-wrapper {
+        width: 1110px;
+      }
+    }
+  }
+}
+</style>

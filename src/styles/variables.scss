@@ -1,0 +1,10 @@
+//sidebar
+$theme: #1f4143;
+$theme-lightenx1: #416368;
+$theme-lightenx2: #99bbc0;
+
+:export {
+  theme: $theme;
+  theme-lightenx1: $theme-lightenx1;
+  theme-lightenx2: $theme-lightenx2;
+}

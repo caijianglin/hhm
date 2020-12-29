@@ -1,0 +1,20 @@
+{
+  "indent": [true, "spaces", 2],
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "jsx-no-lambda": false,
+    "object-literal-sort-keys": false,
+    "no-console": false,
+    "no-empty-interface": false,
+    "ordered-imports": false,
+    "member-access": false, // 需要类成员的显式可见性声明。
+    "curly": false ,// for if do while 要有括号
+    "member-ordering": false // 类声明排序
+  },
+  "linterOptions": {
+    "exclude": [
+      "node_modules/**"
+    ]
+  },
+  "max-line-length": [true, {"limit": 180, "ignore-pattern": "^import |^export {(.*?)}"}]
+}
