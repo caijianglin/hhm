@@ -121,7 +121,8 @@ const user = {
               otel: response.result.otel,
               pemail: response.result.pemail,
               oemail: response.result.oemail,
-              sign: response.result.sign
+              sign: response.result.sign,
+              company: response.result.company
             });
             commit("SET_USER_ID", response.result.empId);
 

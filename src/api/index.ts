@@ -137,6 +137,45 @@ export function getNeedTodoList() {
     method: "post"
   });
 }
+/**
+ *  获取已办列表
+ *
+ * @export
+ * @param {object} params
+ * @returns
+ */
+export function getFinishedTodoList() {
+  return request({
+    url: "com.primeton.portal.taskBiz.queryPersonFinishedWorkItems.biz.ext",
+    method: "post"
+  });
+}
+/**
+ *  获取未阅通知
+ *
+ * @export
+ * @param {object} params
+ * @returns
+ */
+export function getNotificationList() {
+  return request({
+    url: "com.primeton.portal.taskBiz.queryNotificationList.biz.ext?state=UNVIEWED",
+    method: "post"
+  });
+}
+/**
+ *  获取已阅通知
+ *
+ * @export
+ * @param {object} params
+ * @returns
+ */
+export function getNotificationedList() {
+  return request({
+    url: "com.primeton.portal.taskBiz.queryNotificationList.biz.ext?state=VIEWED",
+    method: "post"
+  });
+}
 
 /**
  *  添加日程任务

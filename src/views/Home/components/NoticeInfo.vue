@@ -53,9 +53,11 @@
               ref="wrapper"
               class="pdf"
       ></pdf>
-      <span class="page-btn next" @click="changePdfPage(1)" style="margin-top:20px;">下一页</span>
-      <span class="page-btn pre" @click="changePdfPage(0)" style="margin-top:20px;">上一页</span>
+      <!--<span class="page-btn next" @click="changePdfPage(1)" style="margin-top:20px;">下一页</span>-->
+      <!--<span class="page-btn pre" @click="changePdfPage(0)" style="margin-top:20px;">上一页</span>-->
     </div>
+      <span class="page-btn next" @click="changePdfPage(1)">下一页</span>
+      <span class="page-btn pre" @click="changePdfPage(0)">上一页</span>
   </div>
 </template>
 
@@ -100,7 +102,8 @@ export default class NoticeInfo extends Vue {
       // window.open(`/FileDownLoadDiskServlet?fileid=${file.fileid}`);
       const fileid = file.fileid;
       const filename = file.filename;
-      const strUrl = `http://eos.cpgc.com.cn:8012/onlinePreview?url=${encodeURIComponent(`http://eos.cpgc.com.cn/FileDownLoadDiskServlet?fileid=${fileid}&fullfilename=${filename}`)}`;
+      const filetype = file.filetype.toLowerCase();
+      const strUrl = `http://eos.cpgc.com.cn:8012/onlinePreview?url=${encodeURIComponent(`http://eos.cpgc.com.cn/FileDownLoadDiskServlet?fileid=${fileid}&fullfilename=${fileid}.${filetype}`)}`;
       window.open(strUrl);
     }
     // downloadFile({ fileid: "9e4484e6-8799-4679-8e8e-d47b73a6ab2c" })
@@ -147,6 +150,7 @@ export default class NoticeInfo extends Vue {
     text-align: left;
     background-color: #fff;
     cursor: default;
+      overflow: hidden;
 
     h1 {
       text-align: center;
@@ -190,6 +194,8 @@ export default class NoticeInfo extends Vue {
 
     .pdf-wrapper {
       width: 100%;
+      height: calc(100% - 350px);
+        overflow-y: auto;
       padding: 20px;
       background-color: #9f9f9f;
     }

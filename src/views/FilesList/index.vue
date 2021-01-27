@@ -36,7 +36,8 @@ export default class FilesList extends Vue {
     if(file.fileid){
       const fileid = file.fileid;
       const filename = file.filename;
-      const strUrl = `http://eos.cpgc.com.cn:8012/onlinePreview?url=${encodeURIComponent(`http://eos.cpgc.com.cn/FileDownLoadDiskServlet?fileid=${fileid}&fullfilename=${filename}`)}`;
+      const filetype = file.filetype.toLowerCase();
+      const strUrl = `http://eos.cpgc.com.cn:8012/onlinePreview?url=${encodeURIComponent(`http://eos.cpgc.com.cn/FileDownLoadDiskServlet?fileid=${fileid}&fullfilename=${fileid}.${filetype}`)}`;
       window.open(strUrl);
     }
   }

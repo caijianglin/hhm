@@ -8,7 +8,7 @@
     <calendar @update-task="updateNeedTodo" />
   </div>
   <div class="content-box to-do-list" id="todo-list" style="height:330px">
-    <div class="title-line" style="float: right">
+    <div class="title-line tab-line" style="float: right">
       <!--<p class="title">待办事项（<span style="color: red">{{ needTodo }}</span>）</p>-->
 
         <a class="load-more" @click="TODOListLoadMore">
@@ -16,8 +16,8 @@
         </a>
 
     </div>
-      <el-tabs @tab-click="handleClick" value="first">
-          <el-tab-pane :label="'待办事项（'+needTodo+'）'" name="first">
+      <el-tabs @tab-click="handleTabClick" v-model="dbTabName" class="tabs">
+          <el-tab-pane :label="'待办事项（'+needTodo+'）'" name="todolist">
               <div class="list-wrapper" v-if="needTodolList.length > 0">
                   <div class="todo-line" v-for="(item, index) in needTodolList.slice(0, 9)" :key="`todo-${index}`">
                     <span class="title" :style="{
@@ -40,8 +40,67 @@
               </div>
               <p v-else class="none-tip">暂无数据</p>
           </el-tab-pane>
-          <el-tab-pane label="配置管理" name="second">
-              配置管理
+          <el-tab-pane label="我的已办" name="dolist">
+              <div class="list-wrapper" v-if="finishedTodolList.length > 0">
+                  <div class="todo-line" v-for="(item, index) in finishedTodolList.slice(0, 9)" :key="`todo-${index}`">
+                    <span class="title" :style="{
+                          color: item.isTimeOut === 'Y' ? '#EC5550' : '#414141',
+                          maxWidth:
+                            item.isTimeOut === 'Y'
+                              ? 'calc(100% - 120px)'
+                              : 'calc(100% - 140px)'
+                        }" @click="itemLinkTo(jspFinishedUrl, 'jsp', item)">
+                      {{ item.processInstName }}
+                        <span class="type3" v-if="item.companyName">{{ item.companyName }}</span>
+                        <span class="type2" v-if="item.bpfName">{{ item.bpfName }}</span>
+                        <span class="type">{{ item.workItemName }}</span>
+                      </span>
+
+                      <span class="warning" v-if="item.isTimeOut === 'Y'">超时</span>
+                      <span class="date">{{ item.startTime }}</span>
+                  </div>
+              </div>
+              <p v-else class="none-tip">暂无数据</p>
+          </el-tab-pane>
+          <el-tab-pane :label="'未阅通知（'+unviewdTotal+'）'" name="unviewedNotices">
+              <div class="list-wrapper" v-if="unviewedNoticelList.length > 0">
+                  <div class="todo-line" v-for="(item, index) in unviewedNoticelList.slice(0, 9)" :key="`todo-${index}`">
+                    <span class="title" :style="{
+                          color: item.isTimeOut === 'Y' ? '#EC5550' : '#414141',
+                          maxWidth:
+                            item.isTimeOut === 'Y'
+                              ? 'calc(100% - 120px)'
+                              : 'calc(100% - 140px)'
+                        }" @click="itemLinkTo(jspUnNoticeUrl, 'jsp', item)">
+                      {{ item.title }}
+                        <span class="type">{{ item.message }}</span>
+                      </span>
+
+                      <span class="warning" v-if="item.isTimeOut === 'Y'">超时</span>
+                      <span class="date">{{ item.createTime }}</span>
+                  </div>
+              </div>
+              <p v-else class="none-tip">暂无数据</p>
+          </el-tab-pane>
+          <el-tab-pane label="已阅通知" name="viewedNotices">
+              <div class="list-wrapper" v-if="viewedNoticelList.length > 0">
+                  <div class="todo-line" v-for="(item, index) in viewedNoticelList.slice(0, 9)" :key="`todo-${index}`">
+                    <span class="title" :style="{
+                          color: item.isTimeOut === 'Y' ? '#EC5550' : '#414141',
+                          maxWidth:
+                            item.isTimeOut === 'Y'
+                              ? 'calc(100% - 120px)'
+                              : 'calc(100% - 140px)'
+                        }" @click="itemLinkTo(jspNoticeUrl, 'jsp', item)">
+                      {{ item.title }}
+                        <span class="type">{{ item.message }}</span>
+                      </span>
+
+                      <span class="warning" v-if="item.isTimeOut === 'Y'">超时</span>
+                      <span class="date">{{ item.createTime }}</span>
+                  </div>
+              </div>
+              <p v-else class="none-tip">暂无数据</p>
           </el-tab-pane>
       </el-tabs>
 
@@ -147,14 +206,18 @@
   </div>
   <div class="content-box notice">
     <div class="title-line tab-line">
-      <ul class="tabs">
-        <li v-for="(tab, index) in noticeTabData" :key="`notice-${index}`" :class="[noticeActiveTab === tab.type ? 'active' : '']" @click="noticeTabChange(tab, index)">
-          {{ tab.title }}
-        </li>
-      </ul>
+      <!--<ul class="tabs">-->
+        <!--<li v-for="(tab, index) in noticeTabData" :key="`notice-${index}`" :class="[noticeActiveTab === tab.type ? 'active' : '']" @click="noticeTabChange(tab, index)">-->
+          <!--{{ tab.title }}-->
+        <!--</li>-->
+      <!--</ul>-->
       <router-link tag="a" target="_blank" :to="{ path: 'more_list', query: { appCode: appCode,stype: 'ad',sstype:noticeActiveTab,data:JSON.stringify(noticeTabData) } }" class="load-more">更多</router-link>
     </div>
-    <div class="notice-content">
+
+      <el-tabs v-model="noticeActiveTab" @tab-click="noticeTabChange" class="tabs">
+          <el-tab-pane :label="`${tab.title}`" v-for="(tab, index) in noticeTabData" :name="`${tab.type}`"></el-tab-pane>
+      </el-tabs>
+    <div class="notice-content" style="margin-top: 0;padding: 0;">
       <template v-if="noticeDate.length > 0">
         <template v-for="(item, index) in noticeDate">
           <div v-if="item.sstype === noticeActiveTab" class="notice-line" :key="`notice-${index}`" @click="loadNoticeInfo(item)">
@@ -408,8 +471,8 @@ import {
 import {
   Getter
 } from "vuex-class";
-import "tippy.js/themes/light.css";
 import tippy from "tippy.js";
+import 'tippy.js/dist/tippy.css';
 // import echarts from "echarts";
 import {
   Icon,
@@ -431,6 +494,9 @@ import {
   addToPersonalList,
   getManagementList,
   getNeedTodoList,
+  getFinishedTodoList,
+  getNotificationList,
+  getNotificationedList,
   getNoticeDate,
   getToolList,
   // getNoticeInfo,
@@ -477,8 +543,10 @@ export default class Company extends Vue {
     needTodo: 0,
     task: 0
   };
+  private dbTabName: string = "todolist";
   private recentlySchedule: string = "";
   private needTodo: string | number = 0;
+  private unviewdTotal: string | number = 0;
   private dayTask: string | number = 0;
   private personalList: object[] = [];
   private delIconVisible: boolean = false;
@@ -498,6 +566,11 @@ export default class Company extends Vue {
 
   private newsData: object[] = [];
   private needTodolList: object[] = [];
+  private finishedTodolList: object[] = [];
+  private unviewedNoticelList: object[] = [];
+  private viewedNoticelList: object[] = [];
+  private unviewNotices: object[] = [];
+  private viewedNotices: object[] = [];
   private shareTabData: object[] = [];
     /*[{
       title: "知识简报",
@@ -765,6 +838,9 @@ export default class Company extends Vue {
 
   // iframe弹窗的jsp页面url
   private jspUrl: string = "";
+  private jspFinishedUrl: string="";
+  private jspUnNoticeUrl: string="";
+  private jspNoticeUrl: string="";
   private jspIframeUrl: string = "";
   private jspIframeTitle: string = "";
   private jspDialogVisible: boolean = false;
@@ -773,6 +849,8 @@ export default class Company extends Vue {
 
   private pInstances1: any[] = [];
   private pInstances2: any[] = [];
+  private tippyArr: any[] = [];
+  private tippyMap: any = {};
 
   // 新闻公告刷新定时器
   private newsTimer: any = null;
@@ -902,6 +980,38 @@ export default class Company extends Vue {
       });
   }
 
+  updateFinishedWorkItems() {
+    getFinishedTodoList()
+      .then((res: any) => {
+        this.finishedTodolList = res.result;
+        this.jspFinishedUrl = res.formPath;
+      })
+      .catch(err => {
+        console.log("onShow -> err", err);
+      });
+  }
+
+  updateUnNotifications() {
+    getNotificationList()
+      .then((res: any) => {
+        this.unviewedNoticelList = res.notificationList;
+        this.jspUnNoticeUrl = res.formPath;
+        this.unviewdTotal = res.total;
+      })
+      .catch(err => {
+        console.log("onShow -> err", err);
+      });
+  }
+  updateNotifications() {
+    getNotificationedList()
+      .then((res: any) => {
+        this.viewedNoticelList = res.notificationList;
+        this.jspNoticeUrl = res.formPath;
+      })
+      .catch(err => {
+        console.log("onShow -> err", err);
+      });
+  }
   // 快捷入口待办事项与日程任务锚点定位
   scrollTo(id: string) {
     const ele: any = document.getElementById(id);
@@ -1044,6 +1154,20 @@ export default class Company extends Vue {
   TODOListLoadMore() {
     window.open("/bfp/pcf/client/tasklist/my_task.jsp", "_blank");
   }
+
+  handleTabClick(tab: any,event: any){
+    switch (tab.name) {
+      case "todolist":
+        this.updateWorkItemTodo();
+        this.updateWorkItems();break;
+      case "dolist":
+        this.updateFinishedWorkItems();break;
+      case "unviewedNotices":
+        this.updateUnNotifications();break;
+      case "viewedNotices":
+        this.updateNotifications();break;
+    }
+  }
   // drawCharts() {
   //   const myChart = echarts.init(document.getElementById("charts"));
   //   const option = {
@@ -1169,6 +1293,34 @@ export default class Company extends Vue {
             return item;
           }
         });
+        if(this.pInstances1.length > 0){
+          this.pInstances1.forEach((item,index) =>{
+            if(item !== undefined){
+              item.destroy();
+            }
+          });
+          /*for(let i = 0;i < this.pInstances1.length;i++){
+            if(this.pInstances1[i] !== undefined){
+              this.pInstances1[i].destroy();
+            }
+          }*/
+          // instances1 = undefined;
+          this.pInstances1 = new Array();
+        }
+        if(this.pInstances2.length > 0){
+          this.pInstances2.forEach((item,index) =>{
+            if(item !== undefined){
+              item.destroy();
+            }
+          });
+          /*for(let i = 0;i < this.pInstances2.length;i++){
+            if(this.pInstances2[i] !== undefined){
+              this.pInstances2[i].destroy();
+            }
+          }*/
+          // instances2 = undefined;
+          this.pInstances2 = new Array();
+        }
         this.$nextTick(() => {
           // 增加tippy气泡操作
           this.addTippy(this.personalList, "personal",this.pInstances1,this.pInstances2);
@@ -1247,12 +1399,40 @@ export default class Company extends Vue {
       });
   }
   // 公告tab切换
-  noticeTabChange(item: any, index: number) {
-    this.noticeActiveTab = item.type;
+  noticeTabChange(item: any) {
+    this.noticeActiveTab = item.name;
   }
   // 知识分享tab切换
   shareTabChange(item: any) {
     this.activeShareTab = item.name;
+  }
+  iterTippy(childList:any,type:string,level:any,pre:string){
+    // this.tippyArr = [];
+    level = level + 1;
+    if(
+      !childList.childrenMenuTreeNodeList ||
+      !(childList.childrenMenuTreeNodeList.length > 0)
+    ) {
+      return;
+    }
+    let listDom = "";
+    for (let j = 0; j < childList.childrenMenuTreeNodeList.length; j++) {
+      // 事件传参无效，把参数绑定到节点自定义属性link上
+      if(childList.childrenMenuTreeNodeList[j].linkResId){
+        listDom += `<p class="child-menu"
+          id="${pre}-${level}-${j}"
+          link="${childList.childrenMenuTreeNodeList[j].linkAction}"
+          onclick="childrenMenuTreeNodeClick()">
+          ${childList.childrenMenuTreeNodeList[j].menuName}</p>`;
+      }else{
+        listDom += `<p class="child-menu"
+          id="${pre}-${level}-${j}">
+          ${childList.childrenMenuTreeNodeList[j].menuName}</p>`;
+        const tempDom = this.iterTippy(childList.childrenMenuTreeNodeList[j],type,level,pre);
+        this.tippyArr.push({id:`${pre}-${level}-${j}`,domHtml:tempDom});
+      }
+    }
+    return listDom;
   }
   // 列表增加tippy
   addTippy(data: any, type: string,instances1: any[],instances2: any[]) {
@@ -1270,7 +1450,8 @@ export default class Company extends Vue {
         continue;
       }
       let listDom = "";
-      for (let j = 0; j < childList.childrenMenuTreeNodeList.length; j++) {
+      listDom += this.iterTippy(childList,type,0,`${type}-${childList.id || childList.menuCode}`);
+      /*for (let j = 0; j < childList.childrenMenuTreeNodeList.length; j++) {
         // 事件传参无效，把参数绑定到节点自定义属性link上
         listDom += `<p class="child-menu"
           id="child-menu-${j}"
@@ -1279,10 +1460,11 @@ export default class Company extends Vue {
           ${childList.childrenMenuTreeNodeList[j].menuName}</p>`;
         // const childMenu = document.getElementById(`child-menu-${j}`);
         // childMenu.onclick = function()
-      }
+      }*/
       // this.currentMenus = childList.childrenMenuTreeNodeList;
       // const template: any = document.getElementById("child-menus");
       // dom树相应模块生成对应id，type-id形式，用于让tippy绑定
+      /*console.log("destroy");
       if(instances1.length > 0){
         for(const ins1 of instances1){
           if(ins1 !== undefined){
@@ -1290,7 +1472,8 @@ export default class Company extends Vue {
             ins1.destroy();
           }
         }
-        instances1 = [];
+        // instances1 = undefined;
+        instances1 = new Array();
       }
       if(instances2.length > 0){
         for(const ins2 of instances2){
@@ -1298,14 +1481,19 @@ export default class Company extends Vue {
             ins2.destroy();
           }
         }
-        instances2 = [];
-      }
+        // instances2 = undefined;
+        instances2 = new Array();
+      }*/
       this.$nextTick(() => {
-        if(t <= 9){
-
-          instances1.push(tippy(document.getElementById(`${type}-${childList.id || childList.menuCode}`), {
+        const that = this;
+        const menuDom = document.getElementById(`${type}-${childList.id || childList.menuCode}`);
+        if(menuDom !== null){
+          instances1.push(tippy(menuDom, {
             theme: "light",
             content: listDom,
+            onShown() {
+              that.showTippys();
+            },
             arrow: true,
             // trigger: "click",
             placement: "right",
@@ -1314,10 +1502,13 @@ export default class Company extends Vue {
             arrowType: "sharp" // sharp(default) or 'round'
           }));
         }else{
-          tippy(document.getElementById(`${type}-${childList.id || childList.menuCode}`), {
+          tippy(menuDom, {
             theme: "light",
             content: listDom,
             arrow: true,
+            onShown() {
+              that.showTippys();
+            },
             // trigger: "click",
             placement: "right",
             interactive: true,
@@ -1330,6 +1521,9 @@ export default class Company extends Vue {
           theme: "light",
           content: listDom,
           arrow: true,
+          onShown() {
+            that.showTippys();
+          },
           // trigger: "click",
           placement: "right",
           interactive: true,
@@ -1339,6 +1533,32 @@ export default class Company extends Vue {
       });
     }
   }
+
+  showTippys(){
+
+    const that = this;
+    for (let k = that.tippyArr.length - 1;k >= 0;k--){
+      const tempDomMap = that.tippyArr[k];
+      // tslint:disable-next-line:no-string-literal
+      const tempHtml = tempDomMap['domHtml'];
+      // tslint:disable-next-line:no-string-literal
+      const tempId = tempDomMap['id'];
+      const tempTippy = tippy(document.getElementById(tempId),{
+        theme: "light",
+        content: tempHtml,
+        allowHTML: true,
+        onShown(){
+          that.showTippys();
+        },
+        // trigger: "click",
+        placement: "right",
+        interactive: true,
+        animateFill: true,
+        arrowType: "sharp" // sharp(default) or 'round'
+      });
+    }
+  }
+
   // 获取最近日程
   getRecentlySchedule() {
     queryRecentlySchedule().then((res: any) => {
@@ -1391,6 +1611,34 @@ export default class Company extends Vue {
 
   }
   queryManagementList() {
+    if(this.mInstances1.length > 0){
+      this.mInstances1.forEach((item,index) =>{
+        if(item !== undefined){
+          item.destroy();
+        }
+      });
+      /*for(let i = 0;i < this.mInstances1.length;i++){
+        if(this.mInstances1[i] !== undefined){
+          this.mInstances1[i].destroy();
+        }
+      }*/
+      // instances1 = undefined;
+      this.mInstances1 = new Array();
+    }
+    if(this.mInstances2.length > 0){
+      this.mInstances2.forEach((item,index) =>{
+        if(item !== undefined){
+          item.destroy();
+        }
+      });
+      /*for(let i = 0;i < this.mInstances2.length;i++){
+        if(this.mInstances2[i] !== undefined){
+          this.mInstances2[i].destroy();
+        }
+      }*/
+      // instances2 = undefined;
+      this.mInstances2 = new Array();
+    }
     getManagementList(this.appCode)
       .then((res: any) => {
         this.managementList = res.result;
@@ -1417,7 +1665,6 @@ export default class Company extends Vue {
   mounted() {
     const localUserInfo: any = localStorage.getItem("user_info");
     this.userInfo = JSON.parse(localUserInfo);
-
     // 获取最近日程
     this.getRecentlySchedule();
     // 绘制数据看板
@@ -1428,6 +1675,7 @@ export default class Company extends Vue {
     this.loadNotice("knowledge");
     // 获取待办事项数量
     this.updateWorkItemTodo();
+    this.updateUnNotifications();
     // this.queryManagementList(this.appCode);
     this.queryToolsList();
     this.querySystemList();
@@ -1452,6 +1700,7 @@ export default class Company extends Vue {
       this.loadNotice("ad");
       this.loadNotice("knowledge");
       this.updateWorkItemTodo();
+      this.updateUnNotifications();
       this.updateWorkItems();
       this.getRecentlySchedule();
     }, 5 * 60 * 1000);
@@ -1467,9 +1716,20 @@ export default class Company extends Vue {
       // console.log(, ".............");
     };
     win.a = () => {
-      this.updateWorkItemTodo();
-      this.updateWorkItems();
       this.todoIframeVisible = false;
+      switch (this.dbTabName) {
+        case "todolist":
+            this.updateWorkItemTodo();
+            this.updateWorkItems();
+            break;
+        case "dolist":
+          this.updateFinishedWorkItems();
+          break;
+        case "unviewedNotices":
+          this.updateUnNotifications();break;
+        case "viewedNotices":
+          this.updateNotifications();break;
+      }
     }
   }
   beforeDestroy() {
@@ -1483,6 +1743,9 @@ export default class Company extends Vue {
 <style>
     #dialogClass .el-dialog__body {
         padding: 0 20px !important;
+    }
+    .el-tabs__header{
+        margin: 0 30px 0 0 !important;
     }
 </style>
 <style lang="scss" scoped>
@@ -1740,7 +2003,7 @@ export default class Company extends Vue {
       height: 40px;
       left: 0;
       top: 0;
-      background-color: #f4f5fa;
+        // background-color: #f4f5fa;
       line-height: 40px;
 
       .tabs {
@@ -1861,7 +2124,7 @@ export default class Company extends Vue {
         text-align: left;
         height: 30px;
         line-height: 30px;
-        margin: 0 0 8px 0;
+        margin: 0 0 5px 0;
         cursor: pointer;
 
         .type3 {

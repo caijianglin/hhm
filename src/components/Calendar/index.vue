@@ -275,28 +275,34 @@ export default class Calendar extends Vue {
               ? `0${this.month}`
               : this.month;
           // 格式化后的对应日期
-          cell.date = `${this.year}-${preMonth}-${
+          const preYear =
+            this.month === 0
+                ?this.year - 1
+                : this.year;
+          cell.date = `${preYear}-${preMonth}-${
             Number(cell.text) < 10 ? `0${cell.text}` : cell.text
           }`;
         } else if (count > this.dayCount) {
           cell.text = nextMonthDay;
           cell.type = "next-month";
           const nextMonth =
-            this.month + 1 === 11
-              ? 1
+            this.month + 1 === 12
+              ? '01'
               : this.month + 2 < 10
               ? `0${this.month + 2}`
               : this.month + 2;
-          cell.date = `${this.year}-${nextMonth}-${
+          const nextYear =
+            this.month + 1 === 12
+              ?this.year + 1
+              : this.year;
+          cell.date = `${nextYear}-${nextMonth}-${
             Number(cell.text) < 10 ? `0${cell.text}` : cell.text
           }`;
           nextMonthDay++;
         } else {
           cell.text = count++;
           const currentMonth =
-            this.month === 0
-              ? 12
-              : this.month + 1 < 10
+              this.month + 1 < 10
               ? `0${this.month + 1}`
               : this.month + 1;
           cell.date = `${this.year}-${currentMonth}-${

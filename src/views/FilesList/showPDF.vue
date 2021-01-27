@@ -55,9 +55,12 @@ export default class ShowPDF extends Vue {
     width: 1200px;
     margin: 0 auto;
     padding: 50px 0;
+      overflow: hidden;
 
     .pdf-wrapper {
       width: 100%;
+        height: calc(100% - 350px);
+        overflow-y: auto;
       padding: 20px;
       background-color: #9f9f9f;
     }

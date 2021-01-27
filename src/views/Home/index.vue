@@ -80,7 +80,7 @@
       </el-dropdown>
       <span class="user-name">您好，{{ userInfo.empName || "" }}</span>
       <span>工号：{{ userInfo.empCode || "" }}</span>
-      <span>{{ userInfo.orgName || "-" }}</span>
+        <span v-if="userInfo.company">{{userInfo.company}}</span><span>{{ userInfo.orgName || "-" }}</span>
       <!--<span class="welcome">&#45;&#45;&#45;&#45;今天也要元气满满哦</span>-->
       <div class="search">
         <input v-model.trim="searchText" placeholder="请输入搜索关键字" type="text" @keyup.enter="search" />
@@ -169,7 +169,8 @@ export default class Home extends Vue {
     otel: "",
     pemail: "",
     oemail: "",
-    sign: ""
+    sign: "",
+    company: ""
   };
   private menuName = "子公司门户";
   private logoAddr: string = "logoJT";
