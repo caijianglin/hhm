@@ -225,6 +225,7 @@
             <p class="title" :style="{
                   maxWidth: getWidth(item.istop, item.isread)
                 }">
+              <span style="font-weight: bold;font-size: medium;">{{item.bpfname}}</span>
               {{ item.title }}
             </p>
             <span v-if="item.isread === '0'" class="new-tip">NEW</span>
